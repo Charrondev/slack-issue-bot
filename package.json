@@ -1,0 +1,31 @@
+{
+  "name": "slack-issue-tracker",
+  "version": "0.0.1",
+  "description": "A slack issue tracking bot with github integration.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Charrondev/slack-issue-bot.git"
+  },
+  "keywords": [
+    "slack",
+    "issue",
+    "tracker",
+    "github"
+  ],
+  "author": "Adam Charron, Fred, Adam",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Charrondev/slack-issue-bot/issues"
+  },
+  "homepage": "https://github.com/Charrondev/slack-issue-bot#readme",
+  "dependencies": {
+    "express": "^4.13.4",
+    "knex": "^0.11.5",
+    "slackbots": "^0.5.1",
+    "sqlite3": "^3.1.4"
+  }
+}
