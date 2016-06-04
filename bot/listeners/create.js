@@ -1,40 +1,70 @@
+const knex = require('../../db');
+const {
+  fixQuotes
+} = require('../util');
+const _ = require('lodash');
+
 module.exports = (controller, bot) => {
   controller.hears(['create'], ['direct_message', 'direct_mention'], (bot, message) => {
     if (!message.text.startsWith('create')) {
       return;
     };
 
-    const commandProps = processProps(message.text);
-    checkDatabase(commandProps)
-      .then(rows => {
-        const reply = makePosts(rows);
-        bot.reply(message, reply);
-      })
+    const commandProps = processProps(fixQuotes(message.text));
+    commandProps.author = message.user;
+    commandProps.created_at = new Date().getTime() / 1000;
+    commandProps.updated_at = commandProps.created_at;
+    commandProps.is_closed = 0;
+
+    const includes = commandProps.includes;
+
+    const askIncludes = commandProps.includes.length === 0 ? true : false;
+    const askText = commandProps.text.length === 0 ? true : false;
+
+
+    knex('issues')
+      .max('id as id')
+      .then(max => {
+        console.log(max);
+        commandProps.issue_num = max[0].id + 1;
+        return knex('issues')
+          .insert(_.omit(commandProps, 'includes'));
+      }).catch(error => {
+        console.error(error);
+      });
+
+
   });
 }
 
+// Check inputs of the text for correctness
 function processProps(input) {
   const options = {
     title: '',
     text: '',
-
+    includes: []
   };
 
+  const matched = input.match(/"(.*?)"/);
+  if (matched !== null) {
+    options.title = matched[1];
+    input = input.replace(matched[0], '');
+  }
+
   const commands = input
-                    .replace('list', '')
-                    .trim()
-                    .split('-');
-  // deal with open / closed
+    .replace('create', '')
+    .trim()
+    .split('-');
+
+  // deal with other options
   commands.forEach(item => {
-    if (item.startsWith('closed')) options.showClosed = true;
-    if (item.startsWith('open')) options.showOpen = true;
-    if (item.startsWith('labels')) {
-       options.labels = item.replace('labels', '')
-                        .trim()
-                        .split(',');
+    if (item.startsWith('include')) {
+      options.includes = item.replace(/include|@|>|</g, '')
+        .split(',')
+        .map(username => username.replace('@', '').trim());
     }
-    if(item.startsWith('contains')) {
-      options.contains = item.replace('contains', '').trim();
+    if (item.startsWith('text')) {
+      options.text = item.replace('text', '').trim();
     }
   });
 
