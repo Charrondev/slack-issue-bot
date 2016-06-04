@@ -12,7 +12,7 @@ exports.up = function(knex, Promise) {
             table.timestamp('created_at').defaultTo(knex.fn.now());
             table.timestamp('updated_at').defaultTo(knex.fn.now());
         }),
-        knex.schema.createTable('comment', function(table) {
+        knex.schema.createTable('comments', function(table) {
             table.increments('c_id').primary();
             table.string('i_id');
             table.string('u_id');
@@ -26,6 +26,7 @@ exports.up = function(knex, Promise) {
 exports.down = function(knex, Promise) {
     return Promise.all([
         knex.schema.dropTable('issue'),
-        knex.schema.dropTable('comment')
+        knex.schema.dropTable('comments')
+
     ]);
 };
