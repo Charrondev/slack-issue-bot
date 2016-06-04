@@ -9,6 +9,7 @@ controller.spawn({
   token: require('../tokens.js').slack
 }).startRTM();
 
-controller.hears(['hello', 'hi'], 'direct_message,direct_mention,mention', function(bot, message) {
-  bot.reply('hello');
+controller.hears(['Fucker'], ['message_received', 'direct_message'],(bot, message) => {
+
+  bot.reply(message, 'Dont swear');
 });
