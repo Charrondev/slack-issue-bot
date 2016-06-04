@@ -1,5 +1,8 @@
 var GitHubApi = require('github');
 var knex = require('../db');
+var moment = require('moment');
+
+var sample_time = '2016-06-04T20:38:01Z';
 
 var tokens = require('../tokens');
 var gitToken = tokens.github;
@@ -29,11 +32,14 @@ function fetchIssues(user, repo) {
       const issues = res.map(element => ({
         title: element.title,
         author: element.user.login, //star to denote git authors
+        user_url: element.user.html_url,
+        image_url: element.user.avatar_url,
         url: element.html_url,
         issue_num: element.number,
         text: element.body,
         created_at: element.created_at,
-        updated_at: element.updated_at
+        updated_at: element.updated_at,
+        is_closed: 0
       }));
       //   console.log(issues);
       resolve(issues)
@@ -79,8 +85,13 @@ function syncFromGitHub(user,repo){
 
 }
 
+function format_timestamp(timestamp){
+    return moment(timestamp);
+}
+
 module.exports = {
   fetchIssues,
   insertIssues,
-  parseURL
+  parseURL,
+  format_timestamp
 };
