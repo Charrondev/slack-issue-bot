@@ -13,11 +13,33 @@ var github = new GitHubApi({
 });
 
 module.exports = {
-    getAllIssues: () => {
-        var issues = github.issues.getAll({});
-        console.log(issues);
+    getAllIssues: (user,repo) => {
+        github.issues.getForRepo({user,repo}, (err, res) =>{
+            console.log(res);
+        });
+
     },
     getOneIssue: ()=>{
+        github.issues.get({
+            user: 'Charrondev',
+            repo: 'slack-issue-bot',
+            number: 1}, (err, res) => {
+                console.log(res);
+            });
 
+
+    },
+    getFollowingForUser: () =>{
+        github.users.getFollowingForUser({
+        // optional:
+        // headers: {
+        //     "cookie": "blahblah"
+        // },
+        user: "fredericDaigle"
+    }, function(err, res) {
+        console.log(JSON.stringify(res));
+    });
     }
+
+
 };

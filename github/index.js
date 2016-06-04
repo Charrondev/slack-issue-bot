@@ -1,3 +1,3 @@
 const github = require('./issues');
 
-github.getAllIssues();
+github.getAllIssues('Charrondev','slack-issue-bot');
