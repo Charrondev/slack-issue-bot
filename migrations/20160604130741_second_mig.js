@@ -4,6 +4,9 @@ exports.up = function(knex, Promise) {
         knex.schema.table('issue', table => {
             table.dropColumn('label');
         }),
+        knex.schema.table('repo', table => {
+            table.string('user');
+        }),
         knex.schema.createTable('label', table => {
             table.increments('id').primary();
             table.string('label');
@@ -18,6 +21,9 @@ exports.down = function(knex, Promise) {
         knex.schema.table('issue', table => {
             table.string('label');
         }),
-        knex.schema.dropTable('label')            
+        knex.schema.table('repo', table => {
+            table.dropColumn('user');
+        }),
+        knex.schema.dropTable('label')
     ])
 };

@@ -1,4 +1,5 @@
 var GitHubApi = require('github');
+var knex = require('../db');
 
 var github = new GitHubApi({
     debug: true,
@@ -16,30 +17,8 @@ module.exports = {
     getAllIssues: (user,repo) => {
         github.issues.getForRepo({user,repo}, (err, res) =>{
             console.log(res);
+            
         });
 
-    },
-    getOneIssue: ()=>{
-        github.issues.get({
-            user: 'Charrondev',
-            repo: 'slack-issue-bot',
-            number: 1}, (err, res) => {
-                console.log(res);
-            });
-
-
-    },
-    getFollowingForUser: () =>{
-        github.users.getFollowingForUser({
-        // optional:
-        // headers: {
-        //     "cookie": "blahblah"
-        // },
-        user: "fredericDaigle"
-    }, function(err, res) {
-        console.log(JSON.stringify(res));
-    });
     }
-
-
 };
