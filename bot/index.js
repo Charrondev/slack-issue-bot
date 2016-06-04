@@ -1,15 +1,14 @@
 const Botkit = require('botkit');
 const path = require('path');
 
+const setupBot = require('./setup');
+
 const controller = Botkit.slackbot({
-  debug:true
+  debug:false
 });
 
-controller.spawn({
+const bot = controller.spawn({
   token: require('../tokens.js').slack
 }).startRTM();
 
-controller.hears(['Fucker'], ['message_received', 'direct_message'],(bot, message) => {
-
-  bot.reply(message, 'Dont swear');
-});
+setupBot(controller, bot);
