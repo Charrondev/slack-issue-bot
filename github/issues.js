@@ -14,6 +14,10 @@ var github = new GitHubApi({
 
 module.exports = {
     getAllIssues: () => {
+        var issues = github.issues.getAll({});
+        console.log(issues);
+    },
+    getOneIssue: ()=>{
 
     }
 };
