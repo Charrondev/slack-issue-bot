@@ -28,7 +28,7 @@ function fetchIssues(user, repo) {
       if (err) reject(err);
       const issues = res.map(element => ({
         title: element.title,
-        author: element.user.login,
+        author: element.user.login, //star to denote git authors
         url: element.html_url,
         issue_num: element.number,
         text: element.body,
@@ -43,8 +43,8 @@ function fetchIssues(user, repo) {
 
 
 
-function insertIssues() {
-  fetchIssues('Charrondev', 'slack-issue-bot')
+function insertIssues(user,repo) {
+  fetchIssues(user, repo)
     .then(issues => {
       knex('issues').select('url')
         .then(rows => {
@@ -75,6 +75,9 @@ function parseURL(url){
     }
 }
 
+function syncFromGitHub(user,repo){
+
+}
 
 module.exports = {
   fetchIssues,
