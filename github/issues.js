@@ -17,7 +17,15 @@ module.exports = {
     getAllIssues: (user,repo) => {
         github.issues.getForRepo({user,repo}, (err, res) =>{
             console.log(res);
-            
+            return res.map(element => ({
+                title: res.title,
+                author: user.login,
+                url: res.html_url,
+                issue_num: res.number,
+                text: res.body,
+                created_at: res.created_at,
+                created_at: res.updated_at
+            }));
         });
 
     }

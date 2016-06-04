@@ -1,3 +1,4 @@
 const github = require('./issues');
 
-github.getAllIssues('Charrondev','slack-issue-bot');
+var issues = github.getAllIssues('Charrondev','slack-issue-bot');
+console.log(issues[0]);
