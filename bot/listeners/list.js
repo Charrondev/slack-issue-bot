@@ -8,7 +8,11 @@ module.exports = (controller, bot) => {
     };
 
     const commandProps = processProps(message.text);
-
+    checkDatabase(commandProps)
+      .then(rows => {
+        const reply = makePosts(rows);
+        bot.reply(message, reply);
+      })
   });
 }
 
@@ -42,7 +46,32 @@ function processProps(input) {
 }
 
 function checkDatabase(options) {
-  // return knex('issue').
+  return knex('issues')
+    .select('title', 'text','issue_num', 'url', 'is_closed')
+    .where(function() {
+      this.where('title', 'like', `%${options.contains}%`)
+        .orWhere('text', 'like', `%${options.contains}%`)
+    }).orderBy('issue_num')
+    .then(rows => {
+        const updated = rows.filter(item => item.is_closed === 0 || options.showClosed);
+        return updated;
+    }).catch(err => {
+      console.log(err);
+    })
+}
+
+function makePosts(rows) {
+  const reply = {};
+  reply.text = `Issue results:`;
+  reply.attachments = rows.map(row => ({
+    title: `#${row.issue_num}: ${row.title}`,
+    text: row.text,
+    color: '#7CD197',
+    mrkdwn_in: ["text", "pretext"],
+    "footer": "GitHub API",
+    "footer_icon": "https://cdn4.iconfinder.com/data/icons/iconsimple-logotypes/512/github-512.png"
+  }));
+  return reply;
 }
 
 function createPost(options) {
