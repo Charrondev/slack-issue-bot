@@ -15,18 +15,21 @@ var github = new GitHubApi({
 
 module.exports = {
     getAllIssues: (user,repo) => {
+      return new Promise((resolve, reject) => {
         github.issues.getForRepo({user,repo}, (err, res) =>{
-            console.log(res);
-            return res.map(element => ({
-                title: res.title,
-                author: user.login,
-                url: res.html_url,
-                issue_num: res.number,
-                text: res.body,
-                created_at: res.created_at,
-                created_at: res.updated_at
+            if (err) reject(err);
+            const issues = res.map(element => ({
+                title: element.title,
+                author: element.user.login,
+                url: element.html_url,
+                issue_num: element.number,
+                text: element.body,
+                created_at: element.created_at,
+                updated_at: element.updated_at
             }));
+            console.log(issues);
+            resolve(issues);
         });
-
+      });
     }
 };

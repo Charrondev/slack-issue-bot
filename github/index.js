@@ -1,4 +1,10 @@
 const github = require('./issues');
+const knex = require('../db');
 
-var issues = github.getAllIssues('Charrondev','slack-issue-bot');
-console.log(issues[0]);
+github.getAllIssues('Charrondev','slack-issue-bot')
+  .then(issues => {
+    return knex('issue')
+      .insert(issues);
+  }).catch(error => {
+    console.log(error);
+  });
