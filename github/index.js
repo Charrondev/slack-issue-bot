@@ -1,10 +1,4 @@
-const github = require('./issues');
+const github = require('./github_utils');
 const knex = require('../db');
 
-github.getAllIssues('Charrondev','slack-issue-bot')
-  .then(issues => {
-    return knex('issue')
-      .insert(issues);
-  }).catch(error => {
-    console.log(error);
-  });
+console.log(github.parseURL('https://github.com/mikedeboer/node-github'));
