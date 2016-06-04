@@ -1,4 +1,4 @@
 const github = require('./github_utils');
 const knex = require('../db');
 
-github.insertIssues();
+console.log(github.parseURL('https://github.com/mikedeboer/node-github'));

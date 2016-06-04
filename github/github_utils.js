@@ -1,6 +1,9 @@
 var GitHubApi = require('github');
 var knex = require('../db');
 
+var tokens = require('../tokens');
+var gitToken = tokens.github;
+
 var github = new GitHubApi({
   debug: true,
   protocol: "https",
@@ -10,7 +13,10 @@ var github = new GitHubApi({
   headers: {
     "user-agent": "SlackTracker" // GitHub is happy with a unique user agent
   }
-
+});
+github.authenticate({
+  type: 'oauth',
+  token: gitToken
 });
 
 function fetchIssues(user, repo) {
@@ -42,20 +48,18 @@ function insertIssues() {
     .then(issues => {
       knex('issues').select('url')
         .then(rows => {
-          console.log(rows);
-          issues.filter((element) => {
-            for (url in rows) {
-                console.log(url +" "+ rows.url);
-              if (url === element.url) {
-                console.log('duplicate');
+          issues = issues.filter((element) => {
+            for (var i = 0; i < rows.length; i++) {
+              if (rows[i].url === element.url) {
                 return false;
               }
             }
-            console.log('no duplicates');
             return true;
           });
-          console.log(issues);
-          knex('issues').insert(issues);
+          if (issues.length > 0)
+            knex('issues').insert(issues).catch(error => {
+              console.log(error);
+            });
         });
     })
     .catch(error => {
@@ -63,7 +67,17 @@ function insertIssues() {
     });
 }
 
+function parseURL(url){
+    url_params = url.split('/');
+    return obj = {
+        user: url_params[url_params.length-2],
+        repo: url_params[url_params.length-1]
+    }
+}
+
+
 module.exports = {
   fetchIssues,
-  insertIssues
+  insertIssues,
+  parseURL
 };

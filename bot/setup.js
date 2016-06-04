@@ -4,7 +4,11 @@ module.exports = (controller, bot) => {
   // get all the users and add the to the database.
   bot.api.users.list({}, (err, response) => {
     knex('users')
-      .insert(sanitizeUsers(response.members))
+      .delete()
+      .then(() => {
+        return knex('users')
+          .insert(sanitizeUsers(response.members));
+      })
       .catch(error => {
         // handle error
         console.log(error);
