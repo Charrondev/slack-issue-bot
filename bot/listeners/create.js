@@ -3,12 +3,13 @@ const {
   fixQuotes
 } = require('../util');
 const _ = require('lodash');
+const convoQuestion1 = `You didn't give you're error a description. If you would like to, do so now. Otherwise just say no.`;
 
-module.exports = (controller, bot) => {
+module.exports = controller => {
   controller.hears(['create'], ['direct_message', 'direct_mention'], (bot, message) => {
     if (!message.text.startsWith('create')) {
       return;
-    };
+    }
 
     const commandProps = processProps(fixQuotes(message.text));
     commandProps.author = message.user;
@@ -16,19 +17,36 @@ module.exports = (controller, bot) => {
     commandProps.updated_at = commandProps.created_at;
     commandProps.is_closed = 0;
 
-    const includes = commandProps.includes;
-
-    const askIncludes = commandProps.includes.length === 0 ? true : false;
     const askText = commandProps.text.length === 0 ? true : false;
 
+    bot.startConversation(message, (err, convo) => {
+      if (askText) {
+        convo.ask(convoQuestion1, [
+          {
+            pattern: bot.utterances.no,
+            callback: (response, convo) => {
+              convo.next();
+            }
+          }, {
+            default: true,
+            callback: (response, convo) => {
+              commandProps.text = response.text;
+              convo.next();
+            }
+          }
+        ]);
+      }
+    });
 
     knex('issues')
       .max('id as id')
       .then(max => {
-        console.log(max);
         commandProps.issue_num = max[0].id + 1;
         return knex('issues')
-          .insert(_.omit(commandProps, 'includes'));
+          .insert(_.omit(commandProps, 'includes'))
+          .then(ids => {
+            bot.reply(`Issue #${ids[0]} has been submitted`);
+          });
       }).catch(error => {
         console.error(error);
       });
@@ -36,6 +54,7 @@ module.exports = (controller, bot) => {
 
   });
 }
+
 
 // Check inputs of the text for correctness
 function processProps(input) {
@@ -45,10 +64,15 @@ function processProps(input) {
     includes: []
   };
 
-  const matched = input.match(/"(.*?)"/);
-  if (matched !== null) {
-    options.title = matched[1];
-    input = input.replace(matched[0], '');
+  const title = input.match(/"(.*?)"/);
+  if (title) {
+    options.title = title[1];
+    input = input.replace(title[0], '');
+  }
+
+  const includes = input.match(/<(.*?)>/g);
+  if (includes) {
+    options.includes = includes.map(include => include.replace(/include|@|>|</g, '').trim());
   }
 
   const commands = input
