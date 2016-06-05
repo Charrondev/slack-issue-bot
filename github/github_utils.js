@@ -37,10 +37,10 @@ function fetchAllIssues(user, repo) {
         Promise.all(pageRequests).then(res => {
             var arr = [];
             for (var i = 0; i < res.length; i++) {
-                arr = arr.concat(res[i]);
+              arr = arr.concat(res[i]);
             }
 
-            console.log(arr.length);
+            console.log(arr);
             resolve(arr);
           })
           .catch(error => {
@@ -109,15 +109,36 @@ function insertIssues(user, repo) {
     .then(issues => {
       return knex('issues').whereNotNull('url').del()
         .then(res => {
-          if (issues.length > 0)
-            return knex('issues').insert(issues).catch(error => {
+          insertion(issues).catch(error =>{
               console.log(error);
-            });
+          });
         });
     })
     .catch(error => {
       console.log(error);
     });
+}
+
+function insertion(issues) {
+  return new Promise((resolve, reject) => {
+    if (issues.length > 100) {
+      var current = issues.slice(0, 100);
+      return knex('issues').insert(current)
+        .then(res =>{
+            if(issues.slice(100).length > 0)
+              insertion(issues.slice(100));
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    } else {
+        if(issues.slice(100).length > 0)
+            return knex('issues').insert(issues).catch(error =>{
+                console.log(error);
+            })
+
+    }
+  })
 }
 
 function parseURL(url) {
