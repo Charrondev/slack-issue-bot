@@ -2,8 +2,6 @@ var GitHubApi = require('github');
 var knex = require('../db');
 var moment = require('moment');
 
-
-
 var tokens = require('../tokens');
 var gitToken = tokens.github;
 
@@ -30,7 +28,7 @@ function fetchAllIssues(user, repo) {
       .then(num => {
         var pages = Math.ceil(num / per_page);
         const pageRequests = [];
-        console.log(num);
+        console.log(pages);
         for (var i = 0; i < pages; i++) {
           pageRequests.push(fetchIssues(user, repo, i + 1));
         }
@@ -39,18 +37,14 @@ function fetchAllIssues(user, repo) {
             for (var i = 0; i < res.length; i++) {
               arr = arr.concat(res[i]);
             }
-
-            console.log(arr);
             resolve(arr);
           })
           .catch(error => {
-            // console.log(error);
             reject(error);
           })
 
       });
   })
-
 }
 
 function getIssuesNum(user, repo) {
@@ -77,10 +71,8 @@ function fetchIssues(user, repo, page) {
       if (err) reject(err);
       res = res.filter((element) => { //remove pull request from issues list
         if (element.pull_request == null) {
-          console.log('not pull');
           return true;
         }
-        console.log('pull');
         return false;
       });
       const issues = res.map(element => ({
@@ -105,41 +97,39 @@ function fetchIssues(user, repo, page) {
 
 
 function insertIssues(user, repo) {
-  fetchAllIssues(user, repo)
+  knex('issues').whereNotNull('url')
+    .delete()
+    .then(res => console.log(res))
+    .then(() => fetchAllIssues(user, repo))
     .then(issues => {
-      return knex('issues').whereNotNull('url').del()
-        .then(res => {
-          insertion(issues).catch(error =>{
-              console.log(error);
-          });
-        });
+      return knex.batchInsert('issues', issues, 80);
     })
     .catch(error => {
       console.log(error);
     });
 }
 
-function insertion(issues) {
-  return new Promise((resolve, reject) => {
-    if (issues.length > 100) {
-      var current = issues.slice(0, 100);
-      return knex('issues').insert(current)
-        .then(res =>{
-            if(issues.slice(100).length > 0)
-              insertion(issues.slice(100));
-        })
-        .catch(error => {
-          console.log(error);
-        });
-    } else {
-        if(issues.slice(100).length > 0)
-            return knex('issues').insert(issues).catch(error =>{
-                console.log(error);
-            })
-
-    }
-  })
-}
+// function insertion(issues) {
+//   return new Promise((resolve, reject) => {
+//     if (issues.length > 100) {
+//       var current = issues.slice(0, 100);
+//       return knex('issues').insert(current)
+//         .then(res =>{
+//             if(issues.slice(100).length > 0)
+//               insertion(issues.slice(100));
+//         })
+//         .catch(error => {
+//           console.error(error);
+//         });
+//     } else {
+//         if(issues.slice(100).length > 0)
+//             return knex('issues').insert(issues).catch(error =>{
+//                 console.log(error);
+//             })
+//
+//     }
+//   })
+// }
 
 function parseURL(url) {
   var url_params = url.split('/');
