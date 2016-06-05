@@ -23,13 +23,13 @@ module.exports = (bot, message, options) => {
 }
 
 function insertIssue(options) {
-  return knex('issues')
-    .max('issue_num as id')
+  knex('issues')
+    .max('id as id')
     .then(max => {
       options.issue_num = max[0].id + 1;
       return knex('issues')
         .insert(_.omit(options, 'includes'))
-        .returning('issue_num')
+        .returns('issue_num')
         .then(ids => ids[0])
     }).catch(error => {
       console.error(error);

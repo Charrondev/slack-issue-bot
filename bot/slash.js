@@ -1,8 +1,10 @@
 const Botkit = require('botkit');
 
 const setupBot = require('./setup');
-const list = require('./listeners/list');
-const create = require('./listeners/create');
+const list = require('./slash/list');
+const create = require('./slash/create');
+const edit = require('./slash/edit');
+const github = require('./slash/github');
 
 if (!process.env.CLIENT_ID || !process.env.CLIENT_SECRET || !process.env.PORT) {
   console.log('Error: Specify clientId clientSecret and port in environment');
@@ -15,19 +17,6 @@ const controller = Botkit.slackbot({
   clientId: process.env.CLIENT_ID,
   clientSecret: process.env.CLIENT_SECRET,
   scopes: ['commands'],
-});
-
-const bot = controller.spawn({
-  token: require('../tokens.js').slack
-}).startRTM((err, bot) => {
-    if (err) {
-    throw new Error('Could not connect to Slack');
-  }
-
-  // close the RTM for the sake of it in 5 seconds
-  setTimeout(function() {
-    bot.closeRTM();
-  }, 5000);
 });
 
 controller.setupWebserver(process.env.PORT, () => {
@@ -45,6 +34,8 @@ controller.setupWebserver(process.env.PORT, () => {
 
 
 controller.on('slash_command', (bot, message) => {
+    // setupBot(controller, bot);
+
     // check message.command
     // and maybe message.text...
     // use EITHER replyPrivate or replyPublic...
@@ -55,7 +46,6 @@ controller.on('slash_command', (bot, message) => {
     let command = message.text.substring(0, message.text.indexOf(' '));
     command = command.length === 0 ? message.text : command;
     const options = message.text.substring(message.text.indexOf(' '));
-    console.log(command);
     switch (command) {
       case 'list':
         list(bot, message, options);
@@ -63,9 +53,11 @@ controller.on('slash_command', (bot, message) => {
       case 'create':
         create(bot, message, options);
         break;
+      case 'import':
+        github(bot, message, options);
+        break;
       default:
-        bot.replyPrivate(message, 'I\'ll help you later');
+        if (command.match(/^#[0-9]+\s?/)) edit(bot, message, options);
+        else bot.replyPrivate(message, 'I\'ll help you later');
     }
 });
-
-setupBot(controller, bot);

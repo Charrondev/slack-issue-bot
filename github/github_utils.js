@@ -97,7 +97,7 @@ function fetchIssues(user, repo, page) {
 
 
 function insertIssues(user, repo) {
-  knex('issues').whereNotNull('url')
+  return knex('issues').whereNotNull('url')
     .delete()
     .then(res => console.log(res))
     .then(() => fetchAllIssues(user, repo))
@@ -141,7 +141,7 @@ function parseURL(url) {
 
 function syncFromGitHub(url) {
   var source = parseURL(url);
-  insertIssues(source.user, source.repo);
+  return insertIssues(source.user, source.repo);
 }
 
 function format_timestamp(timestamp) {
