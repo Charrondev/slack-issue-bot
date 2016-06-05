@@ -8,3 +8,5 @@ const controller = Botkit.slackbot({
 const bot = controller.spawn({
   token: require('../tokens.js').slack
 }).startRTM();
+
+require('./listeners/issue_listener')(controller);
