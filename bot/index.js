@@ -15,4 +15,5 @@ const bot = controller.spawn({
 
 setupBot(controller, bot);
 listCommand(controller, bot);
-require('./listeners/create')(controller, bot);
+require('./listeners/create')(controller);
+require('./listeners/github')(controller);

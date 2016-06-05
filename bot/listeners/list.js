@@ -5,7 +5,6 @@ module.exports = controller => {
     if (!message.text.startsWith('list')) {
       return;
     }
-
     const commandProps = processProps(message.text);
     checkDatabase(commandProps)
       .then(rows => {
