@@ -25,34 +25,36 @@ module.exports = controller => {
           {
             pattern: bot.utterances.no,
             callback: (response, convo) => {
+              insertIssue(bot, message, commandProps);
               convo.next();
             }
           }, {
             default: true,
             callback: (response, convo) => {
               commandProps.text = response.text;
+              insertIssue(bot, message, commandProps);
               convo.next();
             }
           }
         ]);
       }
     });
-
-    knex('issues')
-      .max('id as id')
-      .then(max => {
-        commandProps.issue_num = max[0].id + 1;
-        return knex('issues')
-          .insert(_.omit(commandProps, 'includes'))
-          .then(ids => {
-            bot.reply(`Issue #${ids[0]} has been submitted`);
-          });
-      }).catch(error => {
-        console.error(error);
-      });
-
-
   });
+}
+
+function insertIssue(bot, message, commandProps) {
+  knex('issues')
+    .max('id as id')
+    .then(max => {
+      commandProps.issue_num = max[0].id + 1;
+      return knex('issues')
+        .insert(_.omit(commandProps, 'includes'))
+        .then(ids => {
+          bot.reply(message, `Issue #${ids[0]} has been submitted`);
+        });
+    }).catch(error => {
+      console.error(error);
+    });
 }
 
 
@@ -82,11 +84,11 @@ function processProps(input) {
 
   // deal with other options
   commands.forEach(item => {
-    if (item.startsWith('include')) {
-      options.includes = item.replace(/include|@|>|</g, '')
-        .split(',')
-        .map(username => username.replace('@', '').trim());
-    }
+    // if (item.startsWith('include')) {
+    //   options.includes = item.replace(/include|@|>|</g, '')
+    //     .split(',')
+    //     .map(username => username.replace('@', '').trim());
+    // }
     if (item.startsWith('text')) {
       options.text = item.replace('text', '').trim();
     }

@@ -52,6 +52,7 @@ function checkDatabase(options) {
     })
     .join('users', 'issues.author', '=', 'users.id')
     .select('title', 'text','issue_num', 'url', 'is_closed', 'users.real_name', 'users.image_url')
+    .orderBy('issue_num')
     .then(rows => {
       console.log(rows);
         const updated = rows.filter(item => item.is_closed === 0 || options.showClosed);
@@ -61,17 +62,24 @@ function checkDatabase(options) {
     })
 }
 
+const gitIcon = "https://github.com/favicon.ico";
+const slackIcon = "https://platform.slack-edge.com/img/default_application_icon.png";
+
 function makePosts(rows) {
   const reply = {};
   reply.text = `Issue results:`;
-  reply.attachments = rows.map(row => ({
-    title: `#${row.issue_num}: ${row.title}`,
-    text: row.text,
-    author_name: row.real_name,
-    author_icon: row.image_url,
-    mrkdwn_in: ["text", "pretext"],
-    "footer": "GitHub API",
-    "footer_icon": "https://github.com/favicon.ico"
-  }));
+  reply.attachments = rows.map(row => {
+    row.footer_icon = row.url ? gitIcon : slackIcon;
+    row.footer_text = row.url ? 'GitHub' : 'Trackler';
+    return {
+      title: `#${row.issue_num}: ${row.title}`,
+      text: row.text,
+      author_name: row.real_name,
+      author_icon: row.image_url,
+      mrkdwn_in: ["text"],
+      "footer": row.footer_text,
+      "footer_icon": row.footer_icon
+    };
+  });
   return reply;
 }
