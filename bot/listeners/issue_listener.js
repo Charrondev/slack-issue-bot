@@ -9,5 +9,10 @@ module.exports = controller => {
     var issue_id = util.extract_number(text);
     console.log(issue_id);
     util.postOneIssue(issue_id,bot,message);
+    console.log('after post');
+    if(text.match('/get comments/')){
+        console.log('get comments');
+    }
+
   });
 }
