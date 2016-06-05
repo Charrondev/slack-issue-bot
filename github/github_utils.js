@@ -25,15 +25,32 @@ github.authenticate({
 });
 
 function fetchAllIssues(user, repo) {
-  getIssuesNum(user, repo)
-    .then(num => {
-      pages = Math.ceil(num/per_page);
-      page_arr = new Array(pages);
-      for (var i = 0; i < page_arr.length; i++) {
-          page_arr[i]= i+1;
-      }
-      console.log(page_arr);
-    });
+  return new Promise((resolve, reject) => {
+    getIssuesNum(user, repo)
+      .then(num => {
+        var pages = Math.ceil(num / per_page);
+        const pageRequests = [];
+        console.log(num);
+        for (var i = 0; i < pages; i++) {
+          pageRequests.push(fetchIssues(user, repo, i + 1));
+        }
+        Promise.all(pageRequests).then(res => {
+            var arr = [];
+            for (var i = 0; i < res.length; i++) {
+              arr = arr.concat(res[i]);
+            }
+
+            console.log(arr);
+            resolve(arr);
+          })
+          .catch(error => {
+            // console.log(error);
+            reject(error);
+          })
+
+      });
+  })
+
 }
 
 function getIssuesNum(user, repo) {
@@ -49,13 +66,13 @@ function getIssuesNum(user, repo) {
 
 }
 
-function fetchIssues(user, repo) {
+function fetchIssues(user, repo, page) {
   return new Promise((resolve, reject) => {
     github.issues.getForRepo({
       user,
       repo,
       per_page,
-      page: 2
+      page
     }, (err, res) => {
       if (err) reject(err);
       res = res.filter((element) => { //remove pull request from issues list
@@ -78,9 +95,9 @@ function fetchIssues(user, repo) {
         updated_at: element.updated_at,
         is_closed: 0
       }));
-      console.log(res[0]);
+      //   console.log(res[0]);
       //   console.log(issues);
-      resolve(issues)
+      resolve(issues);
     });
   });
 }
@@ -88,22 +105,13 @@ function fetchIssues(user, repo) {
 
 
 function insertIssues(user, repo) {
-  fetchIssues(user, repo)
+  fetchAllIssues(user, repo)
     .then(issues => {
-      knex('issues').select('url')
-        .then(rows => {
-          issues = issues.filter((element) => {
-            for (var i = 0; i < rows.length; i++) {
-              if (rows[i].url === element.url) {
-                return false;
-              }
-            }
-            return true;
-          });
-          if (issues.length > 0)
-            knex('issues').insert(issues).catch(error => {
+      return knex('issues').whereNotNull('url').del()
+        .then(res => {
+          insertion(issues).catch(error =>{
               console.log(error);
-            });
+          });
         });
     })
     .catch(error => {
@@ -111,9 +119,31 @@ function insertIssues(user, repo) {
     });
 }
 
+function insertion(issues) {
+  return new Promise((resolve, reject) => {
+    if (issues.length > 100) {
+      var current = issues.slice(0, 100);
+      return knex('issues').insert(current)
+        .then(res =>{
+            if(issues.slice(100).length > 0)
+              insertion(issues.slice(100));
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    } else {
+        if(issues.slice(100).length > 0)
+            return knex('issues').insert(issues).catch(error =>{
+                console.log(error);
+            })
+
+    }
+  })
+}
+
 function parseURL(url) {
-  url_params = url.split('/');
-  return obj = {
+  var url_params = url.split('/');
+  return {
     user: url_params[url_params.length - 2],
     repo: url_params[url_params.length - 1]
   }
