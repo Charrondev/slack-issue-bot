@@ -35,7 +35,8 @@
     "moment": "^2.13.0",
     "path": "^0.12.7",
     "slackbots": "^0.5.1",
-    "sqlite3": "^3.1.4"
+    "sqlite3": "^3.1.4",
+    "valid-url": "^1.0.9"
   },
   "devDependencies": {
     "eslint": "^2.11.1",
