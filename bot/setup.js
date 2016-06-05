@@ -22,6 +22,7 @@ function sanitizeUsers(users) {
           .map(element => ({
             id: element.id,
             username: element.name,
-            real_name: element.real_name
+            real_name: element.real_name,
+            image_url: element.profile.image_24
           }));
 }

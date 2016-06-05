@@ -1,11 +1,10 @@
 const knex = require('../../db');
-const _ = require('lodash');
 
-module.exports = (controller, bot) => {
+module.exports = controller => {
   controller.hears(['list'], ['direct_message', 'direct_mention'], (bot, message) => {
     if (!message.text.startsWith('list')) {
       return;
-    };
+    }
 
     const commandProps = processProps(message.text);
     checkDatabase(commandProps)
@@ -47,12 +46,14 @@ function processProps(input) {
 
 function checkDatabase(options) {
   return knex('issues')
-    .select('title', 'text','issue_num', 'url', 'is_closed')
     .where(function() {
       this.where('title', 'like', `%${options.contains}%`)
         .orWhere('text', 'like', `%${options.contains}%`)
-    }).orderBy('issue_num')
+    })
+    .join('users', 'issues.author', '=', 'users.id')
+    .select('title', 'text','issue_num', 'url', 'is_closed', 'users.real_name', 'users.image_url')
     .then(rows => {
+      console.log(rows);
         const updated = rows.filter(item => item.is_closed === 0 || options.showClosed);
         return updated;
     }).catch(err => {
@@ -66,14 +67,11 @@ function makePosts(rows) {
   reply.attachments = rows.map(row => ({
     title: `#${row.issue_num}: ${row.title}`,
     text: row.text,
-    color: '#7CD197',
+    author_name: row.real_name,
+    author_icon: row.image_url,
     mrkdwn_in: ["text", "pretext"],
     "footer": "GitHub API",
-    "footer_icon": "https://cdn4.iconfinder.com/data/icons/iconsimple-logotypes/512/github-512.png"
+    "footer_icon": "https://github.com/favicon.ico"
   }));
   return reply;
-}
-
-function createPost(options) {
-
 }
