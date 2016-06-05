@@ -19,6 +19,7 @@ const postMessageFromBot = (bot, channel, text, attachments) => {
     });
   });
 };
+exports.postMessageFromBot = postMessageFromBot;
 
 exports.postOneIssue = (issue_id, bot, message) => {
     knex('issues')
