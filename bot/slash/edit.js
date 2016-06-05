@@ -42,9 +42,6 @@ function updateIssue(options) {
 // Check propss of the text for correctness
 function processProps(props, username) {
   const options = {
-    issue_num: 0,
-    title: '',
-    text: '',
     includes: [],
     is_closed: false
   };
@@ -62,6 +59,7 @@ function processProps(props, username) {
     options.includes = includes.map(include => include.replace(/include|@|>|</g, '').trim());
   }
   options.includes.push(username);
+  console.log(options.includes);
 
   const commands = props
     .trim()

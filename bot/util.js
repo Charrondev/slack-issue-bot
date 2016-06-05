@@ -44,7 +44,6 @@ exports.postOneIssue = (issue_id, bot, message) => {
           footer: row.footer_text,
           footer_icon: row.footer_icon
       }];
-        console.log(bot);
         postMessageFromBot(bot, message.channel, '', reply.attachments);
         // bot.reply(message, reply);
       })

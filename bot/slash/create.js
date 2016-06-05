@@ -5,7 +5,7 @@ const {
 const _ = require('lodash');
 
 module.exports = (bot, message, options) => {
-  const commandProps = processProps(fixQuotes(options));
+  const commandProps = processProps(fixQuotes(options), message.user_name);
   commandProps.author = message.user;
   commandProps.created_at = new Date().getTime() / 1000;
   commandProps.updated_at = commandProps.created_at;
@@ -30,15 +30,25 @@ function insertIssue(options) {
       return knex('issues')
         .insert(_.omit(options, 'includes'))
         .returning('issue_num')
-        .then(ids => ids[0])
-    }).catch(error => {
-      console.error(error);
-    });
+        .then(issue_id => {
+          return knex('users')
+            .whereIn('username', options.includes)
+            .select('id')
+            .then(rows => rows.map(row => ({
+                issue_id,
+                user_id: row.id
+              }))
+            );
+        }).then(rows => knex('follower')
+            .insert(rows)
+            .returning('issue_id')
+          );
+      });
 }
 
 
 // Check inputs of the text for correctness
-function processProps(input) {
+function processProps(input, username) {
   const options = {
     title: '',
     text: '',
@@ -51,10 +61,11 @@ function processProps(input) {
     input = input.replace(title[0], '');
   }
 
-  const includes = input.match(/<(.*?)>/g);
+  const includes = input.match(/@.+/g);
   if (includes) {
     options.includes = includes.map(include => include.replace(/include|@|>|</g, '').trim());
   }
+  options.includes.push(username);
 
   const commands = input
     .replace('create', '')

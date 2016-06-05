@@ -39,6 +39,7 @@ function processProps(input) {
 }
 
 function checkDatabase(options) {
+  const other = knex.raw('(SELECT issue_id, group_concat(user_id) as "follower_ids" from follower GROUP BY user_id) as followers');
   return knex('issues')
     .where(function() {
       this.where('title', 'like', `%${options.contains}%`)
@@ -46,11 +47,13 @@ function checkDatabase(options) {
     })
     .limit(10)
     .leftJoin('users', 'issues.author', '=', 'users.id')
+    .leftJoin(other, 'followers.issue_id', 'issues.id')
     .select('title', 'text','issue_num', 'url', 'is_closed', 'issues.author',
-     'users.real_name', 'users.image_url as image_url', 'issues.image_url as git_image_url')
+     'users.real_name', 'users.image_url as image_url', 'issues.image_url as git_image_url', 'issues.id', 'followers.follower_ids')
     .orderBy('issue_num')
     .then(rows => {
       const updated = rows.filter(item => item.is_closed === 0 || options.showClosed);
+      console.log(rows);
       return updated;
     }).catch(err => {
       console.log(err);
@@ -68,10 +71,11 @@ function makePosts(rows) {
     row.footer_text = row.url ? 'GitHub' : 'Trackler';
     row.author_icon = row.url ? null : row.image_url;
     row.author_name = row.url ? row.author : row.real_name;
+    const followers = row.follower_ids ? row.follower_ids.split(',').forEach(follower => `@${follower}`).join(' ') : [];
     return {
       title: `#${row.issue_num}: ${row.title}`,
       text: row.text,
-      author_name: row.author_name,
+      author_name: row.author_name + ' ' + followers,
       author_icon: row.author_icon,
       mrkdwn_in: ["text"],
       "footer": row.footer_text,
