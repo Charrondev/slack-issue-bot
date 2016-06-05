@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "nodemon bot/index.js",
     "gittest": "nodemon github/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "slash": "CLIENT_ID=28338291219.48261108837 CLIENT_SECRET=d103f0cb8a8e258de1464651f8a1a2e8 PORT=8765 nodemon bot/index.js"
   },
   "repository": {
     "type": "git",

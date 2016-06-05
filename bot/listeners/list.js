@@ -50,13 +50,14 @@ function checkDatabase(options) {
       this.where('title', 'like', `%${options.contains}%`)
         .orWhere('text', 'like', `%${options.contains}%`)
     })
-    .join('users', 'issues.author', '=', 'users.id')
-    .select('title', 'text','issue_num', 'url', 'is_closed', 'users.real_name', 'users.image_url')
+    .limit(10)
+    .leftJoin('users', 'issues.author', '=', 'users.id')
+    .select('title', 'text','issue_num', 'url', 'is_closed', 'issues.author',
+     'users.real_name', 'users.image_url as image_url', 'issues.image_url as git_image_url')
     .orderBy('issue_num')
     .then(rows => {
-      console.log(rows);
-        const updated = rows.filter(item => item.is_closed === 0 || options.showClosed);
-        return updated;
+      const updated = rows.filter(item => item.is_closed === 0 || options.showClosed);
+      return updated;
     }).catch(err => {
       console.log(err);
     })
@@ -71,11 +72,13 @@ function makePosts(rows) {
   reply.attachments = rows.map(row => {
     row.footer_icon = row.url ? gitIcon : slackIcon;
     row.footer_text = row.url ? 'GitHub' : 'Trackler';
+    row.author_icon = row.url ? null : row.image_url;
+    row.author_name = row.url ? row.author : row.real_name;
     return {
       title: `#${row.issue_num}: ${row.title}`,
       text: row.text,
-      author_name: row.real_name,
-      author_icon: row.image_url,
+      author_name: row.author_name,
+      author_icon: row.author_icon,
       mrkdwn_in: ["text"],
       "footer": row.footer_text,
       "footer_icon": row.footer_icon
