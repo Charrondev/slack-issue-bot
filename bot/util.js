@@ -39,4 +39,12 @@ exports.postOneIssue = (issue_id, bot, message) => {
       .catch(error => {
         console.log(error);
       });
+
+
+}
+
+exports.extract_number=(string)=> {
+  var extract = string.match('#[0-9]+');
+  if(!extract) return null;
+  return extract[0].substring(1)
 }

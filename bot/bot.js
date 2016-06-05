@@ -9,4 +9,5 @@ const bot = controller.spawn({
   token: require('../tokens.js').slack
 }).startRTM();
 
+require('./listeners/discuss')(controller);
 require('./listeners/issue_listener')(controller);
