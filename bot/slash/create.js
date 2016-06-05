@@ -5,40 +5,18 @@ const {
 const _ = require('lodash');
 const convoQuestion1 = `You didn't give you're error a description. If you would like to, do so now. Otherwise just say no.`;
 
-module.exports = controller => {
-  controller.hears(['create'], ['direct_message', 'direct_mention'], (bot, message) => {
-    if (!message.text.startsWith('create')) {
-      return;
-    }
+module.exports = (bot, message, options) => {
+  const commandProps = processProps(fixQuotes(message.text));
+  commandProps.author = message.user;
+  commandProps.created_at = new Date().getTime() / 1000;
+  commandProps.updated_at = commandProps.created_at;
+  commandProps.is_closed = 0;
 
-    const commandProps = processProps(fixQuotes(message.text));
-    commandProps.author = message.user;
-    commandProps.created_at = new Date().getTime() / 1000;
-    commandProps.updated_at = commandProps.created_at;
-    commandProps.is_closed = 0;
+  const askText = commandProps.text.length === 0 ? true : false;
 
-    const askText = commandProps.text.length === 0 ? true : false;
+  bot.startConversation(message, (err, convo) => {
+    bot.replyPrivate(message, 'test');
 
-    bot.startConversation(message, (err, convo) => {
-      if (askText) {
-        convo.ask(convoQuestion1, [
-          {
-            pattern: bot.utterances.no,
-            callback: (response, convo) => {
-              insertIssue(bot, message, commandProps);
-              convo.next();
-            }
-          }, {
-            default: true,
-            callback: (response, convo) => {
-              commandProps.text = response.text;
-              insertIssue(bot, message, commandProps);
-              convo.next();
-            }
-          }
-        ]);
-      }
-    });
   });
 }
 

@@ -1,17 +1,12 @@
 const knex = require('../../db');
 
-module.exports = controller => {
-  controller.hears(['list'], ['direct_message', 'direct_mention'], (bot, message) => {
-    if (!message.text.startsWith('list')) {
-      return;
-    }
-    const commandProps = processProps(message.text);
-    checkDatabase(commandProps)
-      .then(rows => {
-        const reply = makePosts(rows);
-        bot.reply(message, reply);
-      })
-  });
+module.exports = (bot, message, options) => {
+  const commandProps = processProps(message.text);
+  checkDatabase(commandProps)
+    .then(rows => {
+      const reply = makePosts(rows);
+      bot.replyPrivate(message, reply);
+    });
 }
 
 function processProps(input) {

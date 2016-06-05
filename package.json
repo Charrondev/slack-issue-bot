@@ -4,10 +4,12 @@
   "description": "A slack issue tracking bot with github integration.",
   "main": "bot/index.js",
   "scripts": {
-    "dev": "nodemon bot/index.js",
+    "bot": "nodemon bot/bot.js",
     "gittest": "nodemon github/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "slash": "CLIENT_ID=28338291219.48261108837 CLIENT_SECRET=d103f0cb8a8e258de1464651f8a1a2e8 PORT=8765 nodemon bot/index.js"
+    "slashBot": "CLIENT_ID=28338291219.48261108837 CLIENT_SECRET=d103f0cb8a8e258de1464651f8a1a2e8 PORT=8765 nodemon bot/slash.js",
+    "localtunnel": "lt --port 8765 --subdomain trackler",
+    "slash": "concurrently \"npm run localtunnel\" \"npm run slashBot\""
   },
   "repository": {
     "type": "git",
