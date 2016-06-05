@@ -32,10 +32,16 @@ controller.setupWebserver(process.env.PORT, () => {
   });
 });
 
+const bot = controller.spawn({
+  token: require('../tokens.js').slack
+}).startRTM();
+
+setupBot(controller, bot);
+require('./listeners/discuss')(controller);
+require('./listeners/issue_listener')(controller);
+
 
 controller.on('slash_command', (bot, message) => {
-    // setupBot(controller, bot);
-
     // check message.command
     // and maybe message.text...
     // use EITHER replyPrivate or replyPublic...
